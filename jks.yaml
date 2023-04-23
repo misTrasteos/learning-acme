@@ -1,0 +1,19 @@
+---
+- name: Create JKS
+  hosts: localhost
+  gather_facts: false
+
+  vars_files:
+  - vars.yaml
+
+  tasks:
+
+  - name: Create JKS
+    community.general.java_keystore:
+      name: "{{ server_certificate.cn }}"
+      keystore_type: pkcs12
+      # TODO, descargar del /etc/lets encrypt directory, me dará la ruta el módulo del acme
+      private_key_path: "{{ paths.server_privatekey }}"
+      certificate_path: "{{ paths.server_certificate }}"
+      password: changeit
+      dest: "{{ paths.server_jks}}"

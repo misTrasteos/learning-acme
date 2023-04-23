@@ -1,4 +1,4 @@
-- name: Stuff
+- name: Retrieve certificate from ACME server
   hosts: localhost
   gather_facts: false
 
@@ -35,17 +35,31 @@
       dest: "{{ server_certificate }}"
       challenge: "http-01"
     register: challenge_output
+  
+  - name: Debug challenge
+    ansible.builtin.debug:
+      msg: "{{ challenge_output }}"
 
+  #- name: "Create .well-known/acme-challenge directory"
+  #  file:
+  #    path: "{{ paths.challenge}}/.well-known/acme-challenge"
+  #    state: directory
+  #    owner: root
+  #    group: root
+  #    mode: u=rwx,g=rx,o=rx
 
-  - name: "Create .well-known/acme-challenge directory"
-    file:
-      path: "{{ paths.challenge}}/.well-known/acme-challenge"
-      state: directory
-      owner: root
-      group: root
-      mode: u=rwx,g=rx,o=rx
+  #- name: "Implement http-01 challenge files"
+  #  copy:
+  #    content: "{{ challenge_output['challenge_data'][item]['http-01']['resource_value'] }}"
+  #    dest: "/var/www/html/{{ challenge_output['challenge_data'][item]['http-01']['resource'] }}"
+  #    owner: root
+  #    group: root
+  #    mode: u=rw,g=r,o=r
+  #  with_items:
+  #  - "{{ domain_name }}"
+  #  - "www.{{ domain_name }}"
 
-  - name: Create a challenge for sample.com using a account key file.
+  - name: Create a challenge for @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ using a account key file.
     community.crypto.acme_certificate:
       acme_directory: "{{ acme_configuration.directory }}"
       acme_version: "{{ acme_configuration.version }}"
@@ -53,7 +67,7 @@
       validate_certs: "{{ acme_configuration.validate_certs }}"
       account_key_src: "{{ paths.acme_account_privatekey}}"
       src: "{{ paths.server_csr }}"
-      dest: "{{ server_certificate }}"
+      dest: "{{ paths.server_certificate }}"
       challenge: "http-01"
       data: "{{ challenge_output }}"
     register: challenge_output

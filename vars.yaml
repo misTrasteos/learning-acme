@@ -12,6 +12,7 @@ paths:
   server_privatekey: "{{ base_dir }}/server.key"
   server_csr: "{{ base_dir }}/server.csr"
   server_certificate: "{{ base_dir }}/server.pem"
+  server_jks: "{{ base_dir }}/server.jks"
 
   challenge: "{{ base_dir}}/challenges"
 
