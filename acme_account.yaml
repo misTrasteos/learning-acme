@@ -1,0 +1,30 @@
+- name: Create account on ACME server
+  hosts: localhost
+  gather_facts: false
+
+  vars_files:
+  - vars.yaml
+
+  pre_tasks:
+  - name: ACME pretasks
+    ansible.builtin.include_tasks: acme_pretasks.yaml
+
+  tasks:
+  - name: Create account private key
+    community.crypto.openssl_privatekey:
+      path: "{{ paths.acme_account_privatekey }}"
+      force: true
+        
+  - name: Create account on ACME server
+    community.crypto.acme_account:
+      acme_directory: "{{ acme_configuration.directory }}"
+      acme_version: "{{ acme_configuration.version }}"
+      terms_agreed: "{{ acme_configuration.terms_agreed }}"
+      validate_certs: "{{ acme_configuration.validate_certs }}"
+      account_key_src: "{{ paths.acme_account_privatekey }}"
+      state: present
+    register: account_output
+
+  - name: debug
+    ansible.builtin.debug:
+      msg: "{{ account_output }}"

@@ -1,0 +1,24 @@
+acme_configuration:
+  directory: https://localhost:14000/dir
+  version: 2
+  terms_agreed: true
+  validate_certs: false
+
+base_dir: /tmp/acme
+
+paths:
+  acme_account_privatekey: "{{ base_dir }}/account.key"
+  
+  server_privatekey: "{{ base_dir }}/server.key"
+  server_csr: "{{ base_dir }}/server.csr"
+  server_certificate: "{{ base_dir }}/server.pem"
+
+  challenge: "{{ base_dir}}/challenges"
+
+server_certificate:
+  cn: example.org
+  san:
+  - DNS:anotherexample.org
+  - DNS:yetanotherexample.org
+  - DNS:example.org # https://github.com/letsencrypt/pebble/issues/233 and https://github.com/ansible/ansible/issues/8603
+  email: admin@example.org

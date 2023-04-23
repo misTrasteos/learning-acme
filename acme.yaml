@@ -1,0 +1,75 @@
+- name: Stuff
+  hosts: localhost
+  gather_facts: false
+
+  vars_files:
+  - vars.yaml
+
+  tasks:
+  - name: Generate private key for server
+    community.crypto.openssl_privatekey:
+      path: "{{ paths.server_privatekey }}"
+      force: true
+
+  - name: Generate CSR for server
+    community.crypto.openssl_csr_pipe:
+      privatekey_path: "{{ paths.server_privatekey }}"
+      common_name: "{{ server_certificate.cn }}"
+      subject_alt_name: "{{ server_certificate.san }}"
+      email_address: "{{ server_certificate.email }}"
+    register: csr_output
+
+  - name: CSR file
+    ansible.builtin.copy:
+      dest: "{{ paths.server_csr }}"
+      content: "{{ csr_output.csr }}"
+
+  - name: Create the challenge on ACME server
+    community.crypto.acme_certificate:
+      acme_directory: "{{ acme_configuration.directory }}"
+      acme_version: "{{ acme_configuration.version }}"
+      terms_agreed: "{{ acme_configuration.terms_agreed }}"
+      validate_certs: "{{ acme_configuration.validate_certs }}"
+      account_key_src: "{{ paths.acme_account_privatekey}}"
+      src: "{{ paths.server_csr }}"
+      dest: "{{ server_certificate }}"
+      challenge: "http-01"
+    register: challenge_output
+
+
+  - name: "Create .well-known/acme-challenge directory"
+    file:
+      path: "{{ paths.challenge}}/.well-known/acme-challenge"
+      state: directory
+      owner: root
+      group: root
+      mode: u=rwx,g=rx,o=rx
+
+  - name: Create a challenge for sample.com using a account key file.
+    community.crypto.acme_certificate:
+      acme_directory: "{{ acme_configuration.directory }}"
+      acme_version: "{{ acme_configuration.version }}"
+      terms_agreed: "{{ acme_configuration.terms_agreed }}"
+      validate_certs: "{{ acme_configuration.validate_certs }}"
+      account_key_src: "{{ paths.acme_account_privatekey}}"
+      src: "{{ paths.server_csr }}"
+      dest: "{{ server_certificate }}"
+      challenge: "http-01"
+      data: "{{ challenge_output }}"
+    register: challenge_output
+    when: challenge_output is changed
+
+  - name: Debug challenge output
+    ansible.builtin.debug:
+      msg: "{{challenge_output}}"
+
+  - name: Get information on generated certificate
+    community.crypto.x509_certificate_info:
+      path: "{{ paths.server_certificate }}"
+    register: x509_certificate_output
+
+  - name: Dump information
+    ansible.builtin.debug:
+      msg: "{{ x509_certificate_output.subject_alt_name }}"
+
+#openssl req -in mycsr.csr -noout -text

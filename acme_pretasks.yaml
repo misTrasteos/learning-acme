@@ -1,0 +1,12 @@
+---
+- name: Base directory to store everything
+  ansible.builtin.file:
+    path: "{{ base_dir }}"
+    state: directory
+    mode: '0700'
+
+- name: Directory to store challenges
+  ansible.builtin.file:
+    path: "{{ paths.challenge }}"
+    state: directory
+    mode: '0700'
